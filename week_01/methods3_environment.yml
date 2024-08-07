@@ -1,0 +1,11 @@
+name: methods3_2024
+channels:
+- conda-forge
+dependencies:
+- python>=3.10
+- pip
+- scikit-learn
+- matplotlib
+- numpy
+- scipy
+- pandas
