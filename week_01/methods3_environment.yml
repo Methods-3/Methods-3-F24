@@ -16,9 +16,37 @@ dependencies:
 - seaborn
 
 ## R Version
-- r-base=4.2.1
+- r-base=4.4.1
 
 ## R packages
 - r-lme4
 - r-multcomp
+- r-fields
 - r-reticulate
+- r-renv
+
+## R Markdown related
+- r-rmarkdown
+- r-knitr
+- r-base64enc
+- r-bslib
+- r-cachem
+- r-cli
+- r-digest
+- r-fastmap
+- r-fs
+- r-glue
+- r-htmltools
+- r-jquerylib
+- r-jsonlite
+- r-lifecycle
+- r-memoise
+- r-mime
+- r-R6
+- r-rappdirs
+- r-rlang
+- r-sass
+- r-stringi
+- r-stringr
+
+
