@@ -24,6 +24,7 @@ dependencies:
 - r-fields
 - r-reticulate
 - r-renv
+- r-plot3D
 
 ## R Markdown related
 - r-rmarkdown
