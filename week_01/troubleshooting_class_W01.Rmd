@@ -1,0 +1,118 @@
+---
+title: "Troubleshooting - class_W01"
+author: "Lau Møller Andersen"
+date: "2024-09-09"
+output: html_document
+---
+
+# Troubleshooting - running RStudio in your conda environment
+
+**Do not install RStudio from conda - it is old and not maintained!!!**  
+  
+Instead, make RStudio use the R from within your environment
+
+
+**On Windows**
+
+Disclaimer: This information is retrieved from ChatGPT. The general idea looks right, but specifics may require checking
+
+```{bash, eval=FALSE}
+conda activate methods3_2024 ## activate your environment
+```
+
+In the Anaconda prompt
+This adds the paths to the prompt, meaning that `RStudio` can be found
+
+```{bash, eval=FALSE}
+set PATH=%PATH%;C:\Program Files\RStudio    # make sure this folder contains RStudio.exe
+set PATH=%PATH%;C:\Program Files\R\R-x.x.x  # make sure this folder contains R.exe
+# Replace x.x.x with your R version.
+RStudio ## should open your RStudio in your right environment now,
+## otherwise check Frederik's solution below on how to change the R that
+# RStudio is relying on
+```
+
+
+To automatically run the PATH command whenever you activate your environment, do the following
+
+```{bash, eval=FALSE}
+cd miniconda3\envs\methods3_2024 ## your path
+mkdir etc\conda\activate.d # create folder, where initializer script will be called from
+cd etc/conda/activate.d ## go there
+## create a file called custom_activate.bat in your text editor of choice
+# and add the two lines above ..., i.e.
+set PATH=%PATH%;C:\Program Files\RStudio
+set PATH=%PATH%;C:\Program Files\R\R-x.x.x
+# Replace x.x.x with your R version.
+## now whenever you (re-)activate your environment, this file is run,
+# adding the paths
+
+```
+
+**On Windows; Frederik's solution**
+Similar idea, just written a bit more user friendly
+
+>Hi Lau 
+>
+>Yes, I think I've got it working. 
+>
+>First, I have set up my conda environment as instructed, but by writing
+> `<conda create --name methods3_environment_win.yml>`
+> instead of
+> `<conda env create -f methods3_environment.yml>`
+ 
+>I previously edited my Path Environment variable inside sysdm.cpl by pressing “Win-R” and typing “sysdm.cpl”. This takes you to a tab called System Properties, where you go to “advanced” and click on environment variables at the bottom. Here I have edited my Path under “user variables” to include my path to where rstudio.exe is located, which for me is `“C:\Program Files\Rstudio\Rstudio.exe”`. However, when I look inside this tab again afterwards, it doesn't look like this path is still saved in the Path itself, so I'm a little confused as to why this would make a difference. 
+ - When I asked ChatGPT, it recommended that I include the path to the R.exe itself instead of Rstudio, but it has worked either way. 
+ 
+>I was then able to start the Rstudio application from within the Miniconda terminal by typing `“C:\Program Files\Rstudio\rstudio.exe”`. When I open the terminal inside Rstudio itself, it now shows (methods3_2024_test) in front of the path itself, which suggests that you are on the right track, as this has not been the case for the other Windows users I have tried to help who have come here in the process but have not been able to move on. 
+
+>From here I open “Tools”, then “Global Options” in the top tab window in Rstudio itself. In “General” I then press Change in “R Version” at the top, then at the bottom “Browse” and then find where R.exe is installed in my conda environment, which for me is: 
+
+>`“C:/Users/frede/miniconda3/envs/methods3_2024_test/Lib/R”`
+
+>This can be checked by typing `R.home()` in the console. If there is no miniconda/conda environment here, then according to ChatGPT you are not using the correct version of R, as this must be in the aforementioned environment. 
+
+>I double check that this is correct by searching for “plot” in “packages” and see that plot3d is loaded. 
+
+>I hope this helps. 
+
+>Sincerely yours 
+>Frederik
+
+>Translated with DeepL.com (free version)
+
+
+
+**On MacOS**
+
+```{bash, eval=FALSE}
+conda activate methods3_2024 ## activate your environment
+```
+
+The problem many MacOS users had was that they were not able to run the following command  
+
+```{bash, eval=FALSE}
+rstudio ## should open rstudio, but doesn't (apparently only Linux)
+open -a RStudio # opens on MacOS, but may fail if path is not added
+## adding to the PATH should help MacOS recognize what you want to do. (Thank you, Halfdan!)
+export PATH="/Applications/RStudio.app/Contents/MacOS/:$PATH" ## double check that this is the right path
+open -a RStudio ## try again after adding PATH; you may have to open a new terminal
+```
+
+To automatically run the PATH command whenever you activate your environment, do the following
+
+```{bash, eval=FALSE}
+## add script that adds path whenever you activate your environment
+cd miniconda3/envs/methods3_2024 ## your path
+mkdir -p etc/conda/activate.d # create folder, where initializer script will be called from
+cd etc/conda/activate.d ## go there
+touch custom_activate.sh ## create a text file 
+## ... and add the following in a text editor of your choice:
+# export PATH="/Applications/RStudio.app/Contents/MacOS/:$PATH" ## double check that this is the right path
+chmod +x custom_activate.sh ## make sure the file can be executed
+## now whenever you (re-)activate your environment, this file is run
+```
+
+
+
+

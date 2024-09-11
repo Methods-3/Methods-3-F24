@@ -1,0 +1,53 @@
+name: methods3_2024
+channels:
+- defaults
+- conda-forge
+dependencies:
+## Python version
+- python>=3.10
+
+## Python packages
+- pip
+- scikit-learn
+- matplotlib
+- numpy
+- scipy
+- pandas
+- seaborn
+
+## R Version
+- r-base=4.1.3
+
+## R packages
+- r-lme4
+- r-multcomp
+- r-fields
+- r-reticulate
+- r-renv
+- r-plot3D
+
+## R Markdown related
+- r-rmarkdown
+- r-knitr
+- r-base64enc
+- r-bslib
+- r-cachem
+- r-cli
+- r-digest
+- r-fastmap
+- r-fs
+- r-glue
+- r-htmltools
+- r-jquerylib
+- r-jsonlite
+- r-lifecycle
+- r-memoise
+- r-mime
+- r-R6
+- r-rappdirs
+- r-rlang
+- r-sass
+- r-stringi
+- r-stringr
+
+

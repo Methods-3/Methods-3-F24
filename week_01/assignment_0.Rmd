@@ -1,0 +1,160 @@
+---
+title: "assignment_0, Methods 3, 2024"
+date: "2024-09-06"
+output:
+  html_document
+---
+
+
+REMEMBER: This assignment is **NOT** part of your portfolio, but is a prerequisite for doing the portfolio
+
+# Assignment 0 - *GitHub*, *R*, *RStudio*, *Python*, *Conda* and *renv*
+
+The goals of today's assignment are:
+
+1)  create a *Conda* environment that contains the *R* and *Python* packages that we need
+2)  set up an *R* project using *RStudio* and *renv*
+3)  connect your *GitHub* profile to the *GitHub* classroom such that you can hand in assignments and access course materials
+
+## 1) What is *Conda*?
+
+*Conda* is a package management and environment system.
+
+### What is a package?
+
+(from ChatGPT)
+
+-   *Python*: Packages are collections of Python modules. They are often distributed as .whl or .tar.gz files. Examples include *numpy*, *pandas*, and *requests*.\
+-   *R*: Packages are collections of R functions, data, and compiled code. They are distributed as .tar.gz files. Examples include *ggplot2*, *dplyr*, and *shiny*.
+
+### Why environments?
+
+We use environments to create **isolated**, **shareable** and **conflict-free spaces** for our projects, e.g. the *methods3_2024* that we are going to create now won't interfere with other projects that we may be running
+
+### Installling *Conda*: miniconda vs. anaconda
+
+*Section can be skipped if you already have miniconda installed*
+
+I recommend installing *Conda* using the **miniconda** distribution. The **anaconda** distribution comes with many pre-installed packages, which may lead to conflicting packages when creating environments.
+
+*Command line install (preferred method)*
+
+**Link**: <https://docs.anaconda.com/miniconda/#quick-command-line-install>
+
+(If you already have **anaconda** installed, you may prefer keeping it to not create any conflicts )
+
+### Create *method3_2024* environment
+
+```{r engine='bash', eval=FALSE}
+cd <path_that_contains methods_environment.yml> # go to folder with methods3_environment.yml file
+conda env create -f methods3_environment.yml # create environment
+conda activate methods3_2024 # activating your newly created environment
+```
+
+### First goal achieved
+
+You are now in an environment that is **isolated** from all *Python* and *R* packages that you may have installed.
+
+The **shareable** *methods3_environment.yml* file contains the recipe for the environment and *Conda* makes sure that the installation is **conflict-free** in terms of dependencies.
+
+**Installed packages**:
+
+```{r engine='bash', comment='', echo=TRUE}
+cat methods3_environment.yml
+```
+
+## 2) Set up an *R* project using *RStudio*
+
+**IMPORTANT**: Open *RStudio* from your newly created environment
+
+```{r engine='bash', eval=FALSE}
+conda activate methods3_2024
+rstudio
+```
+
+Your terminal or Anaconda prompt should look something like this:
+
+![Figure 1: In the methods3_2024 environment](images/opening_RStudio.png)
+
+### Creating a new project
+
+Go to File \> New Project; and choose *New Directory* and then *New Project*
+
+Then fill in directory name and put it in a fitting place  
+  
+![Figure 2: Creating a new project](images/creating_a_new_R_project.png)  
+  
+  
+**IMPORTANT**: Make sure to save all assignment files in your R-project folder  
+**TIP**: use *conda* commands to install new packages, e.g. `conda install -r-ggplot2`  
+
+**Second goal achieved**: *RStudio* now works inside the newly created environment (that is, if you call it from the environment; see Figure 1)
+
+## 3) Connect your \_GitHub account to the \_GitHub Classroom:
+
+The *GitHub Classroom* is where assignments will be shared and where answers to them can be uploaded\
+(If you don't have a *GitHub* account sign up at www.github.com)
+
+### Accepting an assignment
+
+Click the shared assignment link: https://classroom.github.com/a/yliHk1EN
+
+The assignments will be handed in the by the study groups that you have been assigned:\
+**IMPORTANT**: Create your study group using the appropriate name below: (I do know some of you go by other names, but using the names you are registered by makes it easier to cross-check with the official rosters)
+
+![Figure 3: Enter team name](images/create_new_team.png)
+
+-   AiswaryaFrederickJulianneZofia
+-   AlexanderVilmaEmma-Margaret
+-   AndersLukasErikMate
+-   AndreasEvaLeona
+-   AnetaMajaLisa
+-   AnoukCosmaNadiaAleksandra
+-   ClaraLydiaAlexandraZuzanna
+-   DanielLucasAnneGustav
+-   DenitsaJohannaNanna
+-   FrederikMarkusJoakim
+-   FrederikHalfdanPaulaMie
+-   FrederikkeJohannesReka
+-   IdaSaraTeodor
+-   KatrineRegitzeMatildeSára
+-   LunaMikkelNielsRasmus
+-   MarieRuneValeria
+-   SisselSofiaRahelMarton
+
+### Doing the assignment
+
+When you have accepted the assignment, you will see the Rmd file with the assignment:
+
+![Figure 4: The assignment repository](images/lala_assignment.png)
+
+![Figure 5: The assignment](images/assignment.png)
+
+You can then *clone* the repository, by clicking the green *code* button and copying the URL
+
+```{r, engine='bash', eval=FALSE}
+git clone <URL to repository>
+```
+
+Then provide the solution in the Rmd and knit a pdf
+
+Then add, commit and push to your repository (from your cloned folder)
+
+```{r, engine='bash', eval=FALSE}
+git add assignment_0_test.Rmd
+git add assignment_0_test.html
+git commit -m "solution <group_name>"
+git push
+```
+
+Now your assignment repository contains the solution, where I (Lau) can access them
+
+![Figure 6: repository with solution](images/pushed_repository.png)
+
+The URL's to the six assignments that go into the portfolio will be shared through Brightspace
+
+# Conclusion
+
+**Third goal achieved**: you can now access the portfolio assignments as they are uploaded, and you will be able to upload your answers to your group repositories
+
+**This concludes assignment 0**
