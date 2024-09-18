@@ -1,17 +1,6 @@
 ---
-title: "assignment_##, Methods 3, 2024"
+title: "assignment_0_test, Methods 3, 2024"
 date: "yyyy-mm-dd"
-output: pdf_document
+output: html_document
 ---
-
-<style type="text/css">
-  body{
-  font-size: 14pt;
-}
-</style>
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 REMEMBER: In your portfolio, make sure to include code that can reproduce the answers requested in the exercises below (__MAKE A KNITTED VERSION__). If it does not KNIT, it cannot be part of your portfolio
