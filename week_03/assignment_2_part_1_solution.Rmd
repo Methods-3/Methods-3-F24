@@ -1,0 +1,323 @@
+---
+title: "assignment_2_part_1, Methods 3, 2024"
+date: "2024-09-19"
+output: html_document
+---
+REMEMBER: In your portfolio, make sure to include code that can reproduce the answers requested in the exercises below (__MAKE A KNITTED VERSION__). If it does not KNIT, it cannot be part of your portfolio
+
+# Exercises and objectives
+The objectives of the exercises of this assignment are:  
+A) Download and organise the data and model  
+B) Fit multilevel models for response times  
+C) Fit multilevel models for binomial data  
+D) Fit multilevel models for count data  
+
+## Exercise A - Download and organise the data and model
+
+Go to https://osf.io/ecxsj/files/ and download the files associated with Experiment 2 (there should be 29).  
+The data is associated with Experiment 2 of the article at the following DOI https://doi.org/10.1016/j.concog.2019.03.007  
+
+1) Put the data from all subjects into a single data frame  
+
+```{r}
+path <- '/home/lau/Dokumenter/cognitive_science/2021_methods_3/github_methods_3/week_03/private/data' ## exchange for your own path
+n.subjects <- 29
+for(subject.index in 1:n.subjects)
+{
+    ## the formatting key for "sprintf" indicates that the output should be an integer (i) prepended by up to 3 leading zeros
+    filename <- paste(sprintf('%03i', subject.index), '.csv', sep='')
+    full.path <- paste(path, filename, sep='/')
+    if(subject.index == 1) data <- read.csv(full.path) else
+    {
+        data <- rbind(data, read.csv(full.path))
+    }
+}
+```
+
+2) Describe the data and construct extra variables from the existing variables  
+    i. add a variable to the data frame and call it _correct_ (have it be a _logical_ variable). Assign a 1 to each row where the subject indicated the correct answer and a 0 to each row where the subject indicated the incorrect answer (__Hint:__ the variable _obj.resp_ indicates whether the subject answered "even", _e_ or "odd", _o_, and the variable _target_type_ indicates what was actually presented.
+    ii. describe what the following variables in the data frame contain, _trial.type_, _pas_, _trial_, _target.contrast_, _cue_, _task_, _target_type_, _rt.subj_, _rt.obj_, _obj.resp_, _subject_ and _correct_. (That means you can ignore the rest of the variables in your description). For each of them, indicate and argue for what `class` they should be classified into, e.g. _factor_, _numeric_ etc., and apply that class! 
+
+```{r, eval=TRUE}
+## i.
+logical.check <- (data$target.type == 'even' & data$obj.resp == 'e') |
+                 (data$target.type == 'odd'  & data$obj.resp == 'o')
+data$correct <- ifelse(logical.check, TRUE, FALSE)
+
+## ii.
+
+data$trial.type      <- factor(data$trial.type)
+data$task            <- factor(data$task)
+data$pas             <- factor(data$pas) ## one could argue that it should be ordinal
+data$trial           <- as.integer(data$trial)
+data$target.contrast <- as.numeric(data$target.contrast)
+data$cue             <- factor(data$cue)
+data$target.type     <- factor(data$target.type)
+data$rt.subj         <- as.numeric(data$rt.subj)
+data$rt.obj          <- as.numeric(data$rt.obj)
+data$obj.resp        <- factor(data$obj.resp)
+data$correct         <- as.logical(data$correct)
+data$subject         <- factor(data$subject)
+
+```
+
+__Answer Aii:__  
+
+i. _trial.type_ indicates whether we are in the experiment part (1) or staircase part (2)  
+ii. _pas_ indicates the rating given on the perceptual awareness scale  
+iii. _trial_ is a counter for the trial no.  
+iv. _target.contrast_ indicates the contrast of the target relative to the background (1 is white, 0 is black)  
+v. _cue_ indicates which of 35 types of cues was presented before the target  
+vi. _task_ indicates whether the cue consisted of 2 numbers (singles), 4 numbers (pairs) or 8 numbers (quadruplet)  
+vii. _target.type_ indicates whether the target was even or odd  
+viii. _rt.subj_ indicates the response time on the subjective response (pas)  
+ix, _rt.obj_ indicates the response time on the objective response (even/odd)  
+x. _subject_ is the coding for the subject  
+xi. _correct_ is a classification of the objective response  
+
+
+## Exercise B - Fit multilevel models for response times  
+
+We __only__ look at the _experiment_ trials (_trial.type_)  
+
+1) Choose the first four subjects and plot their Quantile-Quantile (Q-Q) plots for the residuals of their objective response times (_rt.obj_) based on four models (one for each subject) where only (first-level) intercept is modelled  (use _qqnorm_ and _qqline_)
+    i. comment on these    
+    ii. does a log-transformation of the response time data improve the Q-Q-plots?
+    
+```{r}
+
+## i.
+subjects <- 1:4
+par(mfrow=c(2, 4), font.axis=2, font.lab=2, cex=0.5)
+for(subject in subjects)
+{
+    subject.data <- data[data$subject == subject &
+                                            data$trial.type == 'experiment', ]
+    model <- lm(rt.obj ~ 1, data=subject.data)
+    log.model <- lm(log(rt.obj) ~ 1, data=subject.data)
+    
+    qqnorm(model$residuals, main=paste('Non-transformed, subject:', subject))
+    qqline(model$residuals)
+    
+    qqnorm(log.model$residuals,
+           main=paste('log-transformed, subject:', subject))
+    qqline(log.model$residuals)
+}
+   
+```
+
+__Answer ii__:  log-transforming makes response times more normal, but not a perfect fit    
+
+2) Do a partial pooling model modelling objective response times (log-transformed) as dependent on _task_ ($X$-matrix), including all subjects  
+    i. which intercepts (ignore slopes for now) would you include among your second-level effects ($Z$-matrix) and why? Choose from the variables: _pas_, _cue_, _target_type_, _subject_ and _correct_
+    ii. explain in your own words what your chosen model says about response times between the different tasks  
+    iii. now make a model that has second-level intercepts for _obj.resp_ and _target_type_: explain why the fit is singular (Hint: read the first paragraph under details in the help for `isSingular`)
+    iv. in your own words - how could you explain why your model would result in a singular fit? (Draw on the background knowledge from the design of the task)
+```{r, message=FALSE}
+library(lme4)
+## i.
+ 
+exp.data <- subset(data, data$trial.type == 'experiment')
+
+multilevel.1 <- lmer(log(rt.obj) ~ task + (1 | subject), data=exp.data)
+multilevel.2 <- lmer(log(rt.obj) ~ task + (1 | subject) + (1 | cue),
+                     data=exp.data)
+multilevel.3 <- lmer(log(rt.obj) ~ task + (1 | subject) + (1 | cue) +
+                         (1 | target.type),
+                     data=exp.data)
+
+multilevel.4 <- lmer(log(rt.obj) ~ task + (1 | subject) + (1 | cue) +
+                         (1 | target.type) + (1 | pas),
+                     data=exp.data)
+multilevel.5 <- lmer(log(rt.obj) ~ task + (1 | subject) + (1 | cue) +
+                         (1 | target.type) + (1 | pas) + (1 | correct),
+                     data=exp.data) ## I choose this
+
+# ii.
+print('Answer ii.: ')
+
+# iii.
+multilevel.singular <- lmer(log(rt.obj) ~ task + 
+                         (1 | target.type) + (1 | obj.resp),
+                         data=exp.data)
+print(VarCorr(multilevel.singular), comp='Variance')
+print('Answer iii.: "target.type" explains zero variance')
+
+# iv.
+print('Answer iv.: ')
+
+
+
+```
+
+    
+## Exercise C - Fit multilevel models for binomial data
+
+1) Fit a multilevel model that models _correct_ as dependent on _task_ with a unique intercept for each _subject_  
+    i. does _task_ explain performance?  
+    ii. add _pas_ as a main effect on top of _task_ - what are the consequences of that?  
+    iii. now fit a multilevel model that models _correct_ as dependent on _pas_ with a unique intercept for each _subject_
+    iv. finally, fit a model that models the interaction between _task_ and _pas_  and their main effect, still with a unique intercept for each _subject_  
+    v. describe in your own words which model is the best in explaining the variance in accuracy, and based on your chosen model - write a short summary on what this says about accuracy as dependent on _pas_ and _task_. You may include informative plots  
+    
+```{r}
+# i.
+multilevel.logistic <- glmer(correct ~ task + (1 | subject), data=exp.data,
+                             family='binomial')
+# ii.
+multilevel.logistic.main <- glmer(correct ~ task + pas + (1 | subject),
+                                  data=exp.data, family='binomial')
+# iii.
+
+multilevel.logistic.pas <- glmer(correct ~ pas + (1 | subject),
+                                 data=exp.data, family='binomial')
+
+# iv.
+multilevel.logistic.interaction <- glmer(correct ~ pas * task + (1 | subject),
+                                         data=exp.data, family='binomial')
+
+# v.
+print('Answer v.:')
+```
+
+
+
+## Exercise D - Fit multilevel models for count data  
+
+1) Initialise a new data frame, `data.count`. _count_ should indicate the number of times they categorized their experience as _pas_ 1-4 for each _task_. I.e. the data frame would have for subject 1: for task:singles, pas1 was used # times, pas2 was used # times, pas3 was used # times and pas4 was used # times. You would then do the same for task:pairs and task:quadruplet  
+
+```{r}
+
+data.count <- data.frame(count = numeric(), 
+                         pas = numeric(), ## remember to make this into a factor afterwards
+                         task = numeric(), ## and this too
+                         subject = numeric()) ## and this too
+
+subjects <- 1:29
+row.index <- 1
+n.pas <- length(levels(data$pas))
+for(subject in subjects)
+{
+    for(task in levels(data$task))
+    {
+        for(pas in 1:n.pas)
+        {
+            ## count
+            count <- sum(data$subject == subject & data$task == task & 
+                             data$pas == pas & data$trial.type == 'experiment')
+            data.count[row.index, ] <- NA
+            data.count$pas[row.index] <- pas
+            data.count$task[row.index] <- task
+            data.count$subject[row.index] <- subject
+            data.count$count[row.index] <- count
+
+            row.index <- row.index + 1
+        }
+    }
+}
+
+data.count <- within(data.count,
+                   {
+                       pas <- factor(pas, levels = c(1, 2, 3, 4))
+                       task <- factor(task, levels = c('singles', 'pairs', 'quadruplet'))
+                       subject <- factor(subject)
+                   })
+```        
+
+2) Now fit a multilevel model that models a unique "slope" for _pas_ for each _subject_ with the interaction between _pas_ and _task_ and their main effects being modelled  
+    i. which family should be used?  
+    ii. why is a slope for _pas_ not really being modelled, and what are we modelling instead?  
+    iii. if you get a convergence error, try another algorithm (the default is the _Nelder_Mead_) - try (_bobyqa_) for which the `dfoptim` package is needed. In `glmer`, you can add the following for the `control` argument: `glmerControl(optimizer="bobyqa")` (if you are interested, also have a look at the function `allFit`)
+    iv. when you have a converging fit - fit a model with only the main effects of _pas_ and _task_. Compare this with the model that also includes the interaction 
+    v. indicate which of the two models, you would choose and why  
+    vi. Make a plot with four subplots that shows the estimated amount of ratings, $\hat y$ for four subjects of your choice as compared to the measured count, $y$. Also include the first-level, $X$, response for _pas_ (aggregating over _task_).
+    vii. based on your chosen model and the plot - write a short summary on what this says about the distribution of ratings as dependent on _pas_ and _task_ and their interaction (you can create plots for all subjects to inform your summary, but only include four subplots in your summary)
+
+```{r}
+## 2)
+
+multilevel.poisson.NM <- glmer(count ~ pas*task + (pas | subject), data=data.count,
+                            family='poisson', verbose=FALSE,
+                            control=glmerControl(optimizer='Nelder_Mead')) # doesn't converge
+
+# i.
+print('Answer i.: The "poisson" family should be used as we are dealing with count data')
+
+# ii.
+print('Answer ii.: Because "pas" is a factorial variable - we are modelling a different average for each subject')
+
+# iii.
+multilevel.poisson.bobyqa <- glmer(count ~ pas*task + (pas | subject), data=data.count,
+                            family='poisson', verbose=FALSE,
+                            control=glmerControl(optimizer='bobyqa'))
+
+# iv.
+multilevel.poisson.main.bobyqa <- glmer(count ~ pas+task + (pas | subject), data=data.count,
+                            family='poisson', verbose=FALSE,
+                            control=glmerControl(optimizer='bobyqa'))
+
+# v.
+print('Answer v.: ')
+
+# vi.
+set.seed(1)
+subjects <- 1:29
+par(mfrow=c(2, 2), font.axis=2, font.lab=2, cex=0.5)
+cols <- colours()[sample(1:length(colours()), nlevels(data.count$task))]
+pm <- multilevel.poisson.bobyqa
+
+for(subject.index in 1:length(subjects))
+{
+    subject <- levels(data.count$subject)[subject.index]
+    subject.name <- subject
+    subject.data <- data.count[data.count$subject == subject,]
+    plot(count ~ as.numeric(pas), data=data.count, type='n', xaxt='n',
+        xlab='Perceptual Awareness Scale', ylab='No. of instances',
+        main=paste('Subj.:', subject.name , 'Interaction between Task and PAS'))
+    axis(1, 1:4, 1:4)
+    group.vector <- c(fixef(pm)[1], sum(fixef(pm)[c(1, 2)]), sum(fixef(pm)[c(1, 3)]), sum(fixef(pm)[c(1, 4)]))
+    lines(1:4, exp(group.vector), lwd=3, lty=3)
+    if(subject.index == 1) legend('topright', legend=c(paste('Fitted', levels(data.count$task))
+                                                       , 'First-level',
+                                                       paste('Obs.', levels(data.count$task))),
+                                  lwd=c(1,1,1,3,NA,NA,NA),
+                                  col=c(cols, 'black', cols), lty=3,
+                                  pch=c(3,3,3,NA,1,1,1))
+    for(task.index in 1:nlevels(subject.data$task))
+    {
+        task <- levels(subject.data$task)[task.index]
+        points(subject.data$pas[subject.data$task == task],
+               subject.data$count[subject.data$task == task],
+               col=cols[task.index])
+        pas.vector <- numeric(4)
+        for(pas in 1:nlevels(subject.data$pas))
+        {
+            if(task == 'singles' & pas == 1) pas.vector[pas] <- fixef(pm)[1] + ranef(pm)$subject[subject.index, 1]
+            if(task == 'singles' & pas == 2) pas.vector[pas] <- sum(fixef(pm)[1:2]) + sum(ranef(pm)$subject[subject.index, 1:2])
+            if(task == 'singles' & pas == 3) pas.vector[pas] <- sum(fixef(pm)[c(1, 3)]) + sum(ranef(pm)$subject[subject.index, c(1, 3)])   
+            if(task == 'singles' & pas == 4) pas.vector[pas] <- sum(fixef(pm)[c(1, 4)]) + sum(ranef(pm)$subject[subject.index, c(1, 4)])                                        
+            ## change below
+            
+            if(task == 'pairs' & pas == 1) pas.vector[pas] <- sum(fixef(pm)[c(1,5)]) + ranef(pm)$subject[subject.index, 1]
+            if(task == 'pairs' & pas == 2) pas.vector[pas] <- sum(fixef(pm)[c(1,2,5,7)]) + sum(ranef(pm)$subject[subject.index, 1:2])
+            if(task == 'pairs' & pas == 3) pas.vector[pas] <- sum(fixef(pm)[c(1,3,5,8)]) + sum(ranef(pm)$subject[subject.index, c(1, 3)])
+            if(task == 'pairs' & pas == 4) pas.vector[pas] <- sum(fixef(pm)[c(1,4,5,9)]) + sum(ranef(pm)$subject[subject.index, c(1, 4)])
+            # 
+            if(task == 'quadruplet' & pas == 1) pas.vector[pas] <- sum(fixef(pm)[c(1,6)]) + ranef(pm)$subject[subject.index, 1]
+            if(task == 'quadruplet' & pas == 2) pas.vector[pas] <- sum(fixef(pm)[c(1,2,6,10)]) + sum(ranef(pm)$subject[subject.index, 1:2])
+            if(task == 'quadruplet' & pas == 3) pas.vector[pas] <- sum(fixef(pm)[c(1,3,6,11)]) + sum(ranef(pm)$subject[subject.index, c(1, 3)])
+            if(task == 'quadruplet' & pas == 4) pas.vector[pas] <- sum(fixef(pm)[c(1,4,6, 12)]) + sum(ranef(pm)$subject[subject.index, c(1, 4)])
+                                                        
+                                                                                            
+        }
+        lines(1:4, exp(pas.vector),  lty=3, col=cols[task.index])
+        points(1:4, exp(pas.vector), pch=3, col=cols[task.index])
+    }
+    
+}
+
+# vii.
+print('Answer vii.: ')
+
+```
+
